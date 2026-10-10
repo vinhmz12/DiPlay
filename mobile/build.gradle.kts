@@ -3,23 +3,25 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+// Optional local-only input. CI and ordinary source builds contain no accessory identity.
 val localAuthenticationAssets = providers.environmentVariable("DIPLAY_AUTH_ASSETS_DIR")
     .orNull?.let { file(it).canonicalFile }
 
 android {
     namespace = "com.shilapi.xcertplay"
-    compileSdk = 37
+    compileSdk {
+        version = release(37)
+    }
 
     defaultConfig {
         applicationId = "com.shihab.diplay"
         minSdk = 25
-        targetSdk = 34
+        targetSdk = 37
         versionCode = 36
         versionName = "0.2.17"
 
         ndk {
-            // Chỉ giữ ABI của đầu xe: 32-bit (armeabi-v7a) và 64-bit (arm64-v8a)
-            abiFilters.addAll(setOf("armeabi-v7a", "arm64-v8a"))
+            abiFilters.addAll(setOf("arm64-v8a"))
         }
     }
 
@@ -27,15 +29,13 @@ android {
 
     signingConfigs {
         create("release") {
-            val keystorePath = providers.environmentVariable("ANDROID_KEYSTORE_PATH").orNull
-            if (!keystorePath.isNullOrEmpty() && file(keystorePath).exists()) {
-                storeFile = file(keystorePath)
-                storePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").orNull ?: ""
-                keyAlias = providers.environmentVariable("ANDROID_KEY_ALIAS").orNull ?: ""
-                keyPassword = providers.environmentVariable("ANDROID_KEY_PASSWORD").orNull ?: ""
-            } else {
-                initWith(getByName("debug"))
-            }
+            storeFile = file(
+                providers.environmentVariable("ANDROID_KEYSTORE_PATH")
+                    .getOrElse("missing-release-keystore.jks"),
+            )
+            storePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").getOrElse("")
+            keyAlias = providers.environmentVariable("ANDROID_KEY_ALIAS").getOrElse("")
+            keyPassword = providers.environmentVariable("ANDROID_KEY_PASSWORD").getOrElse("")
         }
     }
 
@@ -75,6 +75,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
 
+// No implicit import. Only the two explicitly selected local runtime assets are allowed.
 val credentialAssets = files(android.sourceSets.flatMap { source ->
     source.assets.directories.map { directory ->
         fileTree(directory) {
@@ -99,6 +100,7 @@ val rejectBundledCredentials by tasks.registering {
 }
 tasks.named("preBuild") { dependsOn(rejectBundledCredentials) }
 
+// Car-test packages must be standalone. Keep ordinary source/CI builds identity-free.
 val verifyStandaloneAuthentication by tasks.registering {
     group = "verification"
     description = "Require the explicit runtime authentication input for a standalone car-test APK."
