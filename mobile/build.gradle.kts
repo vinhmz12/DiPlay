@@ -18,7 +18,8 @@ android {
         versionName = "0.2.17"
 
         ndk {
-            abiFilters.addAll(setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
+            // Chỉ giữ ABI của đầu xe: 32-bit (armeabi-v7a) và 64-bit (arm64-v8a)
+            abiFilters.addAll(setOf("armeabi-v7a", "arm64-v8a"))
         }
     }
 
