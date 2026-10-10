@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// Optional local-only input. CI and ordinary source builds contain no accessory identity.
 val localAuthenticationAssets = providers.environmentVariable("DIPLAY_AUTH_ASSETS_DIR")
     .orNull?.let { file(it).canonicalFile }
 
@@ -18,7 +17,6 @@ android {
         versionCode = 36
         versionName = "0.2.17"
 
-        // Cấu hình NDK hỗ trợ cả chip 32-bit & 64-bit cho màn hình ô tô
         ndk {
             abiFilters.addAll(setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
         }
@@ -31,11 +29,10 @@ android {
             val keystorePath = providers.environmentVariable("ANDROID_KEYSTORE_PATH").orNull
             if (!keystorePath.isNullOrEmpty() && file(keystorePath).exists()) {
                 storeFile = file(keystorePath)
-                storePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").getOrElse("")
-                keyAlias = providers.environmentVariable("ANDROID_KEY_ALIAS").getOrElse("")
-                keyPassword = providers.environmentVariable("ANDROID_KEY_PASSWORD").getOrElse("")
+                storePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").orNull ?: ""
+                keyAlias = providers.environmentVariable("ANDROID_KEY_ALIAS").orNull ?: ""
+                keyPassword = providers.environmentVariable("ANDROID_KEY_PASSWORD").orNull ?: ""
             } else {
-                // Tự động dùng chữ ký Debug nếu chưa thiết lập Secret Key trên GitHub Actions
                 initWith(getByName("debug"))
             }
         }
