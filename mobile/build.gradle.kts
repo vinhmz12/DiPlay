@@ -8,7 +8,7 @@ val localAuthenticationAssets = providers.environmentVariable("DIPLAY_AUTH_ASSET
 
 android {
     namespace = "com.shilapi.xcertplay"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.shihab.diplay"
