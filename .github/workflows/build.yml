@@ -19,7 +19,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build APK Debug
+      - name: Build Debug APK
         run: ./gradlew :mobile:assembleDebug
 
       - name: Upload APK Artifact
